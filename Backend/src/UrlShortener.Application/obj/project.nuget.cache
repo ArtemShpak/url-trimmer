@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "oZhtVwFVEi8=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\Artem\\RiderProjects\\Url.Trimmer\\Backend\\src\\UrlShortener.Application\\UrlShortener.Application.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Artem\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\10.0.11\\microsoft.extensions.dependencyinjection.abstractions.10.0.11.nupkg.sha512"
+  ],
+  "logs": []
+}

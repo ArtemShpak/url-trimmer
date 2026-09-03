@@ -1,0 +1,35 @@
+﻿@model UrlShortener.Api.Models.AboutViewModel
+@{
+    ViewData["Title"] = "Про алгоритм";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 rounded-4 p-4">
+                <div class="card-body">
+                    <h1 class="h3 mb-4 fw-bold text-dark border-bottom pb-2">Про алгоритм скорочення посилань</h1>
+
+                    @if (Model.IsAdmin)
+                    {
+                        <form asp-action="Index" method="post">
+                            <div class="mb-3">
+                                <label for="content" class="form-label text-muted small fw-semibold">Редагувати опис системи:</label>
+                                <textarea name="content" id="content" class="form-control rounded-3 p-3 shadow-none border-secondary-subtle" rows="8">@Model.Content</textarea>
+                            </div>
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" class="btn btn-dark px-4 py-2 rounded-pill fw-semibold">Зберегти зміни</button>
+                            </div>
+                        </form>
+                    }
+                    else
+                    {
+                        <div class="bg-light rounded-3 p-4 border border-light-subtle">
+                            <p class="mb-0 text-secondary lh-lg" style="white-space: pre-wrap;">@Model.Content</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
