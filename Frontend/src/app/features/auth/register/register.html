@@ -1,0 +1,27 @@
+<div class="auth-container">
+  <h2>Реєстрація</h2>
+
+  <form (ngSubmit)="onSubmit()" #registerForm="ngForm">
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" name="email" [(ngModel)]="credentials.email" required>
+    </div>
+
+    <div class="form-group">
+      <label>Пароль</label>
+      <input type="password" name="password" [(ngModel)]="credentials.password" required>
+    </div>
+
+    <button type="submit" [disabled]="!registerForm.valid" class="btn-primary btn-full">
+      Зареєструватися
+    </button>
+  </form>
+
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <div class="auth-links">
+    <a routerLink="/login">Вже маєте акаунт? Увійти</a>
+  </div>
+</div>

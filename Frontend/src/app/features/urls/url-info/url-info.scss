@@ -1,0 +1,44 @@
+.info-container {
+  max-width: 800px;
+  margin: 0 auto;
+
+  .header-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    h2 { color: var(--primary-color); }
+  }
+
+  .info-card {
+    background: var(--surface-color);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+  }
+
+  .info-row {
+    display: flex;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border-color);
+
+    &:last-child { border-bottom: none; }
+
+    .label {
+      width: 200px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .value {
+      flex: 1;
+      color: var(--text-main);
+      word-break: break-all;
+
+      a {
+        color: var(--accent-color);
+        text-decoration: none;
+        &:hover { text-decoration: underline; }
+      }
+    }
+  }
+}
