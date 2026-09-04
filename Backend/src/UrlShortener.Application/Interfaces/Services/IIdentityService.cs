@@ -5,9 +5,9 @@ namespace UrlShortener.Application.Interfaces.Services;
 
 public interface IIdentityService
 {
-    Task<bool> RegistrationUserAsync(LoginRequestDto loginRequest);
+    Task<Result> RegistrationUserAsync(LoginRequestDto loginRequest);
 
-    Task<bool> LoginAsync(LoginRequestDto loginRequest);
+    Task<Result> LoginAsync(LoginRequestDto loginRequest);
 
     Task LogoutAsync();
 

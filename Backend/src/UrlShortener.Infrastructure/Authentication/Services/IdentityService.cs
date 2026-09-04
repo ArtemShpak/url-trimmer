@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using UrlShortener.Application.Dto;
 using UrlShortener.Application.Interfaces.Services;
 using UrlShortener.Core.Entity;
+using UrlShortener.Core.Entity.Error;
 using UrlShortener.Infrastructure.Authentication.Entity;
 using UrlShortener.Infrastructure.Persistence;
 
@@ -13,10 +14,10 @@ public class IdentityService(
     ApplicationContext dbContext,
     SignInManager<Person> signInManager) : IIdentityService
 {
-    public async Task<bool> RegistrationUserAsync(LoginRequestDto request)
+    public async Task<Result> RegistrationUserAsync(LoginRequestDto request)
     {
         var existingUser = await userManager.FindByEmailAsync(request.Email);
-        if (existingUser is not null) return false;
+        if (existingUser is not null) return Result.Failure(DomainErrors.Auth.EmailAlreadyInUse);
 
         var user = new Person
         {
@@ -26,17 +27,20 @@ public class IdentityService(
         };
 
         var result = await userManager.CreateAsync(user, request.Password);
-        if (!result.Succeeded) return false;
+        if (!result.Succeeded) return Result.Failure(DomainErrors.Auth.RegistrationFailed);
 
         await userManager.AddToRoleAsync(user, "User");
-        return true;
+        return Result.Success();
     }
 
 
-    public async Task<bool> LoginAsync(LoginRequestDto request)
+    public async Task<Result> LoginAsync(LoginRequestDto request)
     {
         var user = await userManager.FindByEmailAsync(request.Email);
-        if (user is null) return false;
+        if (user is null)
+        {
+            return Result.Failure(DomainErrors.Auth.InvalidCredentials);
+        }
 
         var result = await signInManager.PasswordSignInAsync(
             user.UserName!,
@@ -44,7 +48,12 @@ public class IdentityService(
             isPersistent: true,
             lockoutOnFailure: false);
 
-        return result.Succeeded;
+        if (!result.Succeeded)
+        {
+            return Result.Failure(DomainErrors.Auth.InvalidCredentials);
+        }
+
+        return Result.Success();
     }
 
     public async Task LogoutAsync()
@@ -74,7 +83,7 @@ public class IdentityService(
     {
         var user = dbContext.Users.Find(userId);
         if (user is null)
-            return Task.FromResult(Result.Failure("User not found"));
+            return Task.FromResult(Result.Failure(DomainErrors.User.UserNotFound));
 
         dbContext.Users.Remove(user);
         dbContext.SaveChanges();

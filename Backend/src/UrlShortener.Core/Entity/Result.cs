@@ -6,23 +6,21 @@ public class Result
 
     public bool IsFailure => !IsSuccess;
 
-    public string? Error { get; }
+    public Error.Error? Error { get; }
 
-    protected Result(bool isSuccess, string? error)
+    protected Result(bool isSuccess, Error.Error? error)
     {
-        if (isSuccess && !string.IsNullOrEmpty(error))
-            throw new InvalidOperationException("Успішний результат не може містити помилку.");
-
-        if (!isSuccess && string.IsNullOrEmpty(error))
-            throw new InvalidOperationException("Неуспішний результат має містити опис помилки.");
-
+        if (isSuccess && error is not null)
+            throw new InvalidOperationException("A successful result cannot contain an error.");
+        if (!isSuccess && error is null)
+            throw new InvalidOperationException("A failure result must contain an error description.");
         IsSuccess = isSuccess;
         Error = error;
     }
 
     public static Result Success() => new(true, null);
 
-    public static Result Failure(string error) => new(false, error);
+    public static Result Failure(Error.Error error) => new(false, error);
 }
 
 public class Result<T> : Result
@@ -33,7 +31,7 @@ public class Result<T> : Result
         ? _value!
         : throw new InvalidOperationException("Неможливо отримати значення для невдалого результату.");
 
-    protected Result(bool isSuccess, T? value, string? error)
+    protected Result(bool isSuccess, T? value, Error.Error? error)
         : base(isSuccess, error)
     {
         _value = value;
@@ -41,5 +39,5 @@ public class Result<T> : Result
 
     public static Result<T> Success(T value) => new(true, value, null);
 
-    public new static Result<T> Failure(string error) => new(false, default, error);
+    public new static Result<T> Failure(Error.Error error) => new(false, default, error);
 }

@@ -2,6 +2,7 @@
 using UrlShortener.Application.Interfaces.Repository;
 using UrlShortener.Application.Interfaces.Services;
 using UrlShortener.Core.Entity;
+using UrlShortener.Core.Entity.Error;
 
 namespace UrlShortener.Application.Services;
 
@@ -13,11 +14,11 @@ public class ShortUrlService(
     public async Task<Result<ShortUrl>> CreateShortUrlAsync(string originalUrl)
     {
         var currentUserId = currentUserService.UserId;
-        if (currentUserId is null)
-            return Result<ShortUrl>.Failure("User is not authenticated.");
+        if (currentUserId == 0)
+            return Result<ShortUrl>.Failure(DomainErrors.Auth.Unauthorized);
 
         if (await repository.UrlExistsAsync(originalUrl))
-            return Result<ShortUrl>.Failure("Такий URL вже існує в системі.");
+            return Result<ShortUrl>.Failure(DomainErrors.Url.AlreadyExists);
 
         string shortCode;
         do
@@ -29,7 +30,7 @@ public class ShortUrlService(
         {
             OriginalUrl = originalUrl,
             ShortCode = shortCode,
-            CreatedByUserId = currentUserId.Value,
+            CreatedByUserId = currentUserId,
             CreatedDate = DateTime.UtcNow
         };
 
@@ -59,15 +60,15 @@ public class ShortUrlService(
 
     public async Task<Result> DeleteShortUrlAsync(int id)
     {
-        if (currentUserService.UserId is null)
-            return Result.Failure("User is not authenticated.");
+        if (currentUserService.UserId == 0)
+            return Result.Failure(DomainErrors.Auth.Unauthorized);
 
         var url = await repository.GetByIdAsync(id);
         if (url is null)
-            return Result.Failure("Url not found");
+            return Result.Failure(DomainErrors.Url.NotFound);
 
         if (!CanModify(url))
-            return Result.Failure("Forbidden");
+            return Result.Failure(DomainErrors.Auth.Forbidden);
 
         await repository.DeleteAsync(id);
         await repository.SaveChangesAsync();
@@ -79,9 +80,11 @@ public class ShortUrlService(
     {
         var url = await repository.GetByIdAsync(id);
         if (url is null)
-            return Result<ShortUrlDetailsResponse>.Failure("Url not found");
+            return Result<ShortUrlDetailsResponse>.Failure(DomainErrors.Url.NotFound);
 
-        var userName = currentUserService.Email ?? "Unknown";
+        var userName = string.IsNullOrEmpty(currentUserService.Email) 
+            ? "Unknown" 
+            : currentUserService.Email;
 
         var response = new ShortUrlDetailsResponse(
             url.Id,
@@ -99,6 +102,6 @@ public class ShortUrlService(
     {
         var currentUserId = currentUserService.UserId;
         return currentUserService.IsAdmin ||
-               (currentUserId is not null && currentUserId == url.CreatedByUserId);
+               (currentUserId != 0 && currentUserId == url.CreatedByUserId);
     }
 }

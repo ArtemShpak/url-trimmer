@@ -15,7 +15,14 @@ public class ShortUrlsController(IShortUrlService shortUrlService) : ControllerB
         var result = await shortUrlService.CreateShortUrlAsync(originalUrl);
 
         if (result.IsFailure)
-            return BadRequest(new { error = result.Error });
+        {
+            return StatusCode(result.Error!.Code switch
+            {
+                "Url.AlreadyExists" => StatusCodes.Status400BadRequest,
+                "Auth.Unauthorized" => StatusCodes.Status401Unauthorized,
+                _ => StatusCodes.Status400BadRequest
+            }, new { code = result.Error.Code, error = result.Error.Message });
+        }
 
         return Ok(result.Value);
     }
@@ -44,11 +51,12 @@ public class ShortUrlsController(IShortUrlService shortUrlService) : ControllerB
 
         if (result.IsFailure)
         {
-            return result.Error switch
+            return result.Error!.Code switch
             {
-                "Url not found" => NotFound(new { error = result.Error }),
-                "Forbidden" => Forbid(),
-                _ => BadRequest(new { error = result.Error })
+                "Url.NotFound" => NotFound(new { code = result.Error.Code, error = result.Error.Message }),
+                "Auth.Forbidden" => Forbid(),
+                "Auth.Unauthorized" => Unauthorized(new { code = result.Error.Code, error = result.Error.Message }),
+                _ => BadRequest(new { code = result.Error.Code, error = result.Error.Message })
             };
         }
 
@@ -63,10 +71,11 @@ public class ShortUrlsController(IShortUrlService shortUrlService) : ControllerB
 
         if (result.IsFailure)
         {
-            return result.Error switch
+            return result.Error!.Code switch
             {
-                "Url not found" => NotFound(new { error = result.Error }),
-                _ => BadRequest(new { error = result.Error })
+                "Url.NotFound" => NotFound(new { code = result.Error.Code, error = result.Error.Message }),
+                "Auth.Unauthorized" => Unauthorized(new { code = result.Error.Code, error = result.Error.Message }),
+                _ => BadRequest(new { code = result.Error.Code, error = result.Error.Message })
             };
         }
 

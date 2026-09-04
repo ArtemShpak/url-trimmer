@@ -3,6 +3,7 @@ using UrlShortener.Application.Interfaces.Repository;
 using UrlShortener.Application.Interfaces.Services;
 using UrlShortener.Application.Services;
 using UrlShortener.Core.Entity;
+using UrlShortener.Core.Entity.Error;
 
 namespace UrlShortener.Application.Tests;
 
@@ -16,7 +17,7 @@ public class ShortUrlServiceTests
         var result = await service.CreateShortUrlAsync("https://example.com");
 
         Assert.True(result.IsFailure);
-        Assert.Equal("User is not authenticated.", result.Error);
+        Assert.Equal(DomainErrors.Auth.Unauthorized, result.Error);
     }
 
     [Fact]
@@ -38,7 +39,7 @@ public class ShortUrlServiceTests
         var result = await service.CreateShortUrlAsync("https://example.com");
 
         Assert.True(result.IsFailure);
-        Assert.Equal("Такий URL вже існує в системі.", result.Error);
+        Assert.Equal(DomainErrors.Url.AlreadyExists, result.Error);
     }
 
     [Fact]
@@ -99,7 +100,7 @@ public class ShortUrlServiceTests
         var result = await service.DeleteShortUrlAsync(1);
 
         Assert.True(result.IsFailure);
-        Assert.Equal("User is not authenticated.", result.Error);
+        Assert.Equal(DomainErrors.Auth.Unauthorized, result.Error);
     }
 
     [Fact]
@@ -111,7 +112,7 @@ public class ShortUrlServiceTests
         var result = await service.DeleteShortUrlAsync(999);
 
         Assert.True(result.IsFailure);
-        Assert.Equal("Url not found", result.Error);
+        Assert.Equal(DomainErrors.Url.NotFound, result.Error);
     }
 
     [Fact]
@@ -133,7 +134,7 @@ public class ShortUrlServiceTests
         var result = await service.DeleteShortUrlAsync(1);
 
         Assert.True(result.IsFailure);
-        Assert.Equal("Forbidden", result.Error);
+        Assert.Equal(DomainErrors.Auth.Forbidden, result.Error);
     }
 
     [Fact]
@@ -192,7 +193,7 @@ public class ShortUrlServiceTests
         var result = await service.GetShortUrlDetailsAsync(5);
 
         Assert.True(result.IsFailure);
-        Assert.Equal("Url not found", result.Error);
+        Assert.Equal(DomainErrors.Url.NotFound, result.Error);
     }
 
     [Fact]
@@ -300,9 +301,17 @@ public class ShortUrlServiceTests
 
     private sealed class StubCurrentUserService : ICurrentUserService
     {
-        public int? UserId { get; set; }
+        public int UserId { get; set; }
         public string Email { get; set; } = string.Empty;
         public bool IsAdmin { get; set; }
         public string Role { get; set; } = string.Empty;
+
+        public UserResponseDto? GetCurrentUser()
+        {
+            if (UserId == 0 || string.IsNullOrEmpty(Email))
+                return null;
+
+            return new UserResponseDto(UserId, Email, Role);
+        }
     }
 }
