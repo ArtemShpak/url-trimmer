@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using UrlShortener.Application.Dto;
 using UrlShortener.Application.Interfaces.Services;
+using UrlShortener.Core.Entity.Error;
 
 namespace UrlShortener.Api.Controllers;
 
@@ -10,24 +12,25 @@ public class ShortUrlsController(IShortUrlService shortUrlService) : ControllerB
 {
     [HttpPost]
     [Authorize]
-    public async Task<IActionResult> CreateShortUrl([FromBody] string originalUrl)
+    public async Task<IActionResult> CreateShortUrl([FromBody] CreateShortUrlRequestDto request)
     {
-        var result = await shortUrlService.CreateShortUrlAsync(originalUrl);
+        var result = await shortUrlService.CreateShortUrlAsync(request.OriginalUrl);
 
         if (result.IsFailure)
         {
-            return StatusCode(result.Error!.Code switch
+            return result.Error!.Code switch
             {
-                "Url.AlreadyExists" => StatusCodes.Status400BadRequest,
-                "Auth.Unauthorized" => StatusCodes.Status401Unauthorized,
-                _ => StatusCodes.Status400BadRequest
-            }, new { code = result.Error.Code, error = result.Error.Message });
+                var code when code == DomainErrors.ShortUrl.AlreadyExists.Code => BadRequest(new { code, error = result.Error.Message }),
+                var code when code == DomainErrors.Auth.Unauthorized.Code => Unauthorized(new { code, error = result.Error.Message }),
+                var code when code == DomainErrors.ShortUrl.InvalidFormat.Code => BadRequest(new { code, error = result.Error.Message }),
+                _ => BadRequest(new { code = result.Error.Code, error = result.Error.Message })
+            };
         }
 
         return Ok(result.Value);
     }
 
-    [HttpGet("/{shortCode}")]
+    [HttpGet("{shortCode}")]
     [AllowAnonymous]
     public async Task<IActionResult> RedirectToOriginal(string shortCode)
     {
@@ -53,9 +56,9 @@ public class ShortUrlsController(IShortUrlService shortUrlService) : ControllerB
         {
             return result.Error!.Code switch
             {
-                "Url.NotFound" => NotFound(new { code = result.Error.Code, error = result.Error.Message }),
-                "Auth.Forbidden" => Forbid(),
-                "Auth.Unauthorized" => Unauthorized(new { code = result.Error.Code, error = result.Error.Message }),
+                var code when code == DomainErrors.ShortUrl.NotFound.Code => NotFound(new { code, error = result.Error.Message }),
+                var code when code == DomainErrors.Auth.Forbidden.Code => Forbid(),
+                var code when code == DomainErrors.Auth.Unauthorized.Code => Unauthorized(new { code, error = result.Error.Message }),
                 _ => BadRequest(new { code = result.Error.Code, error = result.Error.Message })
             };
         }
@@ -73,8 +76,8 @@ public class ShortUrlsController(IShortUrlService shortUrlService) : ControllerB
         {
             return result.Error!.Code switch
             {
-                "Url.NotFound" => NotFound(new { code = result.Error.Code, error = result.Error.Message }),
-                "Auth.Unauthorized" => Unauthorized(new { code = result.Error.Code, error = result.Error.Message }),
+                var code when code == DomainErrors.ShortUrl.NotFound.Code => NotFound(new { code, error = result.Error.Message }),
+                var code when code == DomainErrors.Auth.Unauthorized.Code => Unauthorized(new { code, error = result.Error.Message }),
                 _ => BadRequest(new { code = result.Error.Code, error = result.Error.Message })
             };
         }

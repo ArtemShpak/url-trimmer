@@ -2,20 +2,32 @@
 
 public static class DomainErrors
 {
-    public static class Url
+    public static class ShortUrl
     {
         public static readonly Error NotFound = new(
-            "Url.NotFound",
+            "ShortUrl.NotFound",
             "Url not found"
         );
 
         public static readonly Error AlreadyExists = new(
-            "Url.AlreadyExists",
+            "ShortUrl.AlreadyExists",
             "Such a short URL already exists"
+        );
+
+        public static readonly Error InvalidFormat = new(
+            "ShortUrl.InvalidFormat",
+            "Invalid URL format"
         );
     }
 
-    public static class Auth
+    public static class Url
+    {
+        public static readonly Error NotFound = ShortUrl.NotFound;
+        public static readonly Error AlreadyExists = ShortUrl.AlreadyExists;
+        public static readonly Error InvalidFormat = ShortUrl.InvalidFormat;
+    }
+
+    public static class Authentication
     {
         public static readonly Error Forbidden = new(
             "Auth.Forbidden",
@@ -26,21 +38,30 @@ public static class DomainErrors
             "Auth.Unauthorized",
             "User is not authenticated"
         );
-        
+
         public static readonly Error InvalidCredentials = new(
             "Auth.InvalidCredentials",
             "Invalid email or password"
         );
-        
+
         public static readonly Error EmailAlreadyInUse = new(
             "Auth.EmailAlreadyInUse",
             "Email is already in use"
         );
-        
+
         public static readonly Error RegistrationFailed = new(
             "Auth.RegistrationFailed",
             "User registration failed"
         );
+    }
+
+    public static class Auth
+    {
+        public static readonly Error Forbidden = Authentication.Forbidden;
+        public static readonly Error Unauthorized = Authentication.Unauthorized;
+        public static readonly Error InvalidCredentials = Authentication.InvalidCredentials;
+        public static readonly Error EmailAlreadyInUse = Authentication.EmailAlreadyInUse;
+        public static readonly Error RegistrationFailed = Authentication.RegistrationFailed;
     }
 
     public static class User
@@ -49,27 +70,27 @@ public static class DomainErrors
             "User.NotFound",
             "User not found"
         );
-        
+
         public static readonly Error EmailNotAvailable = new(
-            "Auth.EmailNotAvailable", 
+            "Auth.EmailNotAvailable",
             "Current user email is not available"
         );
 
         public static readonly Error IdNotAvailable = new(
-            "Auth.IdNotAvailable", 
+            "Auth.IdNotAvailable",
             "Current user ID is not available"
         );
 
         public static readonly Error RoleNotAvailable = new(
-            "Auth.RoleNotAvailable", 
+            "Auth.RoleNotAvailable",
             "Current user role is not available"
         );
-        
+
         public static readonly Error UserAlreadyExists = new(
             "User.AlreadyExists",
             "User with this email already exists"
         );
-        
+
         public static readonly Error FailedDeletingUser = new(
             "User.FailedDeleting",
             "Failed to delete user"

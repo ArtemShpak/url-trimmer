@@ -13,6 +13,9 @@ public class ShortUrlService(
 {
     public async Task<Result<ShortUrl>> CreateShortUrlAsync(string originalUrl)
     {
+        if (!UrlValidator.IsValid(originalUrl))
+            return Result<ShortUrl>.Failure(DomainErrors.Url.InvalidFormat);
+
         var currentUserId = currentUserService.UserId;
         if (currentUserId == 0)
             return Result<ShortUrl>.Failure(DomainErrors.Auth.Unauthorized);

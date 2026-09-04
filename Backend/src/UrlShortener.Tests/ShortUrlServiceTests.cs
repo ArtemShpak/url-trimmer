@@ -21,6 +21,17 @@ public class ShortUrlServiceTests
     }
 
     [Fact]
+    public async Task CreateShortUrlAsync_WhenUrlFormatIsInvalid_ReturnsFailure()
+    {
+        var service = CreateSut(new StubShortUrlRepository(), new StubShortenerService(), new StubCurrentUserService { UserId = 5, Email = "user@example.com", Role = "User" });
+
+        var result = await service.CreateShortUrlAsync("not-a-valid-url");
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(DomainErrors.Url.InvalidFormat, result.Error);
+    }
+
+    [Fact]
     public async Task CreateShortUrlAsync_WhenOriginalUrlAlreadyExists_ReturnsFailure()
     {
         var repository = new StubShortUrlRepository();
