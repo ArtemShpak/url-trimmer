@@ -1,0 +1,252 @@
+{
+  "info": {
+    "_postman_id": "4fcbf7bf-fa3c-487a-8c75-bd44aef87a46",
+    "name": "Url-Shoretener",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "37888629"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "item": [
+            {
+              "name": "LoginByAsAdmin",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"email\": \"admin@shortener.local\",\r\n    \"password\": \"Admin@123\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:5068/api/auth/login",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5068",
+                  "path": [
+                    "api",
+                    "auth",
+                    "login"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "LoginByAsUser",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"email\": \"admin@shortener.local\",\r\n    \"password\": \"Admin@123\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:5068/api/auth/login",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5068",
+                  "path": [
+                    "api",
+                    "auth",
+                    "login"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Registration",
+          "item": [
+            {
+              "name": "Registration",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"email\": \"artem@shortener.local\",\r\n    \"password\": \"User1234\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:5068/api/auth/registration",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5068",
+                  "path": [
+                    "api",
+                    "auth",
+                    "registration"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "GetAllUsers[Authorize]",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5068/api/auth/users",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5068",
+              "path": [
+                "api",
+                "auth",
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "DeleteUser",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5068/api/auth/2",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5068",
+              "path": [
+                "api",
+                "auth",
+                "2"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GetCurrentUserInfo",
+          "request": {
+            "method": "GET",
+            "header": []
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "GET",
+            "header": []
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Links",
+      "item": [
+        {
+          "name": "CreateShortUrl",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "\r\n\"https://github.com/dotnet/aspnetcore\"\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5068/api/shorturls",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5068",
+              "path": [
+                "api",
+                "shorturls"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GetAllShortLinks",
+          "request": {
+            "method": "GET",
+            "header": []
+          },
+          "response": []
+        },
+        {
+          "name": "RedirectFromShortLink",
+          "request": {
+            "method": "GET",
+            "header": []
+          },
+          "response": []
+        },
+        {
+          "name": "DeleteUrlById",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5068/api/urls/1",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5068",
+              "path": [
+                "api",
+                "urls",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GetUrlById",
+          "request": {
+            "method": "GET",
+            "header": []
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
