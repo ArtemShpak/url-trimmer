@@ -41,13 +41,22 @@ export class UrlListComponent implements OnInit {
     if (!this.newOriginalUrl.trim()) return;
 
     this.errorMessage = '';
+
     this.urlService.create(this.newOriginalUrl).subscribe({
       next: (newUrl: ShortUrl) => {
         this.urls.update((current) => [newUrl, ...current]);
         this.newOriginalUrl = '';
       },
-      error: () => {
-        this.errorMessage = 'Такий URL вже існує або сталася помилка';
+      error: (err) => {
+        const errorCode = err.error?.code;
+
+        if (errorCode === 'Url.AlreadyExists') {
+          this.errorMessage = 'Такий URL вже існує в системі.';
+        } else if (errorCode === 'Auth.Unauthorized') {
+          this.errorMessage = 'Будь ласка, увійдіть у систему знову.';
+        } else {
+          this.errorMessage = err.error?.error || 'Сталася непередбачувана помилка.';
+        }
       },
     });
   }

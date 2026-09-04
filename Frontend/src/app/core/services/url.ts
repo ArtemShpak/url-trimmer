@@ -12,9 +12,7 @@ export class UrlService {
   }
 
   create(originalUrl: string) {
-    return this.http.post<ShortUrl>(this.apiUrl, JSON.stringify(originalUrl), {
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return this.http.post<ShortUrl>(this.apiUrl, { originalUrl });
   }
 
   delete(id: number) {
