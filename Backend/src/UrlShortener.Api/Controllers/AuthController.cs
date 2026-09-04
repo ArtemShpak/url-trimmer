@@ -38,13 +38,6 @@ public class AuthController(IAuthService authService) : Controller
         return Ok(users.Value);
     }
 
-    [HttpGet("protected")]
-    [Authorize]
-    public IActionResult GetProtectedResource()
-    {
-        return Ok("This is a protected resource.");
-    }
-
     [HttpDelete("{id:int}")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteUser(int id)
