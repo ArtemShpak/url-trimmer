@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using UrlShortener.Application.Interfaces;
 using UrlShortener.Application.Interfaces.Repository;
 using UrlShortener.Core.Entity;
 

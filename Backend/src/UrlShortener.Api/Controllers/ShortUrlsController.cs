@@ -1,64 +1,38 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using UrlShortener.Application.Interfaces;
 using UrlShortener.Application.Interfaces.Services;
-using UrlShortener.Infrastructure.Authentication.Entity;
 
 namespace UrlShortener.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ShortUrlsController : ControllerBase
+public class ShortUrlsController(IShortUrlService shortUrlService) : ControllerBase
 {
-    private readonly IShortUrlService _shortUrlService;
-    private readonly UserManager<Person> _userManager;
-
-    public ShortUrlsController(IShortUrlService shortUrlService, UserManager<Person> userManager)
-    {
-        _shortUrlService = shortUrlService;
-        _userManager = userManager;
-    }
-
     [HttpPost]
     [Authorize]
     public async Task<IActionResult> CreateShortUrl([FromBody] string originalUrl)
     {
-        var userIdStr = _userManager.GetUserId(User);
-        if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId))
-        {
-            return Unauthorized();
-        }
+        var result = await shortUrlService.CreateShortUrlAsync(originalUrl);
 
-        var (isSuccess, errorMessage, result) = await _shortUrlService.CreateShortUrlAsync(originalUrl, userId);
+        if (result.IsFailure)
+            return BadRequest(new { error = result.Error });
 
-        if (!isSuccess)
-        {
-            return BadRequest(errorMessage);
-        }
-
-        return Ok(result);
+        return Ok(result.Value);
     }
 
     [HttpGet("/{shortCode}")]
     [AllowAnonymous]
     public async Task<IActionResult> RedirectToOriginal(string shortCode)
     {
-        var originalUrl = await _shortUrlService.GetOriginalUrlAndRecordClickAsync(shortCode);
-
-        if (originalUrl == null)
-        {
-            return NotFound();
-        }
-
-        return Redirect(originalUrl);
+        var originalUrl = await shortUrlService.GetOriginalUrlAndRecordClickAsync(shortCode);
+        return originalUrl is null ? NotFound() : Redirect(originalUrl);
     }
 
     [HttpGet]
     [AllowAnonymous]
     public async Task<IActionResult> GetAllShortUrls()
     {
-        var urls = await _shortUrlService.GetAllUrlsAsync();
+        var urls = await shortUrlService.GetAllUrlsAsync();
         return Ok(urls);
     }
 
@@ -66,7 +40,7 @@ public class ShortUrlsController : ControllerBase
     [Authorize]
     public async Task<IActionResult> DeleteShortUrl(int id)
     {
-        var result = await _shortUrlService.DeleteShortUrlAsync(id);
+        var result = await shortUrlService.DeleteShortUrlAsync(id);
 
         if (result.IsFailure)
         {
@@ -79,5 +53,23 @@ public class ShortUrlsController : ControllerBase
         }
 
         return NoContent();
+    }
+
+    [HttpGet("{id:int}")]
+    [Authorize]
+    public async Task<IActionResult> GetShortUrlDetails(int id)
+    {
+        var result = await shortUrlService.GetShortUrlDetailsAsync(id);
+
+        if (result.IsFailure)
+        {
+            return result.Error switch
+            {
+                "Url not found" => NotFound(new { error = result.Error }),
+                _ => BadRequest(new { error = result.Error })
+            };
+        }
+
+        return Ok(result.Value);
     }
 }

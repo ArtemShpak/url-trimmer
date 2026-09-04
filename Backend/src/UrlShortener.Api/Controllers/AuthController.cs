@@ -54,4 +54,22 @@ public class AuthController(IAuthService authService) : Controller
 
         return NoContent();
     }
+
+    [HttpGet("me")]
+    [Authorize]
+    public async Task<IActionResult> GetCurrentUser()
+    {
+        var result = await authService.GetCurrentUserAsync();
+        if (result.IsFailure) return BadRequest(new { message = result.Error });
+
+        return Ok(result.Value);
+    }
+    
+    [HttpPost("logout")]
+    [Authorize]
+    public async Task<IActionResult> Logout()
+    {
+        await authService.LogoutAsync();
+        return Ok(new { message = "Logged out successfully" });
+    }
 }

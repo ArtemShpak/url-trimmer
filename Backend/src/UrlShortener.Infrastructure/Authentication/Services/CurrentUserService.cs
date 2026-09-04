@@ -17,5 +17,9 @@ public class CurrentUserService(IHttpContextAccessor context) : ICurrentUserServ
         }
     }
 
+    public string Email => User?.FindFirst(ClaimTypes.Email)?.Value ?? string.Empty;
+
     public bool IsAdmin => User?.IsInRole("Admin") ?? false;
+
+    public string? Role => User?.FindFirst(ClaimTypes.Role)?.Value;
 }

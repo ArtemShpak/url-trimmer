@@ -12,4 +12,8 @@ public interface IAuthService
     Task<Result<IEnumerable<UserResponseDto>>> GetAllUsersAsync();
 
     Task<Result> DeleteUserByIdAsync(int userId);
+    
+    Task<Result<UserResponseDto>> GetCurrentUserAsync();
+    
+    Task LogoutAsync();
 }

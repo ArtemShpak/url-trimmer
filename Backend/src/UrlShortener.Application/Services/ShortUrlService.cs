@@ -1,4 +1,5 @@
-﻿using UrlShortener.Application.Interfaces.Repository;
+﻿using UrlShortener.Application.Dto;
+using UrlShortener.Application.Interfaces.Repository;
 using UrlShortener.Application.Interfaces.Services;
 using UrlShortener.Core.Entity;
 
@@ -9,12 +10,14 @@ public class ShortUrlService(
     IUrlShortenerService shortenerService,
     ICurrentUserService currentUserService) : IShortUrlService
 {
-    public async Task<(bool IsSuccess, string ErrorMessage, ShortUrl Result)> CreateShortUrlAsync(string originalUrl, int userId)
+    public async Task<Result<ShortUrl>> CreateShortUrlAsync(string originalUrl)
     {
+        var currentUserId = currentUserService.UserId;
+        if (currentUserId is null)
+            return Result<ShortUrl>.Failure("User is not authenticated.");
+
         if (await repository.UrlExistsAsync(originalUrl))
-        {
-            return (false, "Такий URL вже існує в системі.", null);
-        }
+            return Result<ShortUrl>.Failure("Такий URL вже існує в системі.");
 
         string shortCode;
         do
@@ -26,25 +29,23 @@ public class ShortUrlService(
         {
             OriginalUrl = originalUrl,
             ShortCode = shortCode,
-            CreatedByUserId = userId,
+            CreatedByUserId = currentUserId.Value,
             CreatedDate = DateTime.UtcNow
         };
 
         await repository.AddAsync(newUrl);
         await repository.SaveChangesAsync();
 
-        return (true, string.Empty, newUrl);
+        return Result<ShortUrl>.Success(newUrl);
     }
 
-    public async Task<string> GetOriginalUrlAndRecordClickAsync(string shortCode)
+    public async Task<string?> GetOriginalUrlAndRecordClickAsync(string shortCode)
     {
         var urlEntity = await repository.GetByShortCodeAsync(shortCode);
-
-        if (urlEntity == null)
+        if (urlEntity is null)
             return null;
 
         urlEntity.ClickCount++;
-
         await repository.UpdateAsync(urlEntity);
         await repository.SaveChangesAsync();
 
@@ -58,20 +59,46 @@ public class ShortUrlService(
 
     public async Task<Result> DeleteShortUrlAsync(int id)
     {
-        var currentUserId = currentUserService.UserId;
-        if (currentUserId is null) return Result.Failure("User in not authenticated.");
+        if (currentUserService.UserId is null)
+            return Result.Failure("User is not authenticated.");
 
         var url = await repository.GetByIdAsync(id);
-        if (url is null) return Result.Failure("URL not found.");
+        if (url is null)
+            return Result.Failure("Url not found");
 
-        bool isOwner = url.CreatedByUserId == currentUserId.Value;
-        bool isAdmin = currentUserService.IsAdmin;
-
-        if (!isOwner && !isAdmin) return Result.Failure("You do not have permission to delete this URL.");
+        if (!CanModify(url))
+            return Result.Failure("Forbidden");
 
         await repository.DeleteAsync(id);
         await repository.SaveChangesAsync();
 
         return Result.Success();
+    }
+
+    public async Task<Result<ShortUrlDetailsResponse>> GetShortUrlDetailsAsync(int id)
+    {
+        var url = await repository.GetByIdAsync(id);
+        if (url is null)
+            return Result<ShortUrlDetailsResponse>.Failure("Url not found");
+
+        var userName = currentUserService.Email ?? "Unknown";
+
+        var response = new ShortUrlDetailsResponse(
+            url.Id,
+            url.ShortCode,
+            url.OriginalUrl,
+            userName,
+            url.CreatedDate,
+            url.ClickCount,
+            CanModify(url));
+
+        return Result<ShortUrlDetailsResponse>.Success(response);
+    }
+
+    private bool CanModify(ShortUrl url)
+    {
+        var currentUserId = currentUserService.UserId;
+        return currentUserService.IsAdmin ||
+               (currentUserId is not null && currentUserId == url.CreatedByUserId);
     }
 }

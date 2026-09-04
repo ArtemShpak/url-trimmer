@@ -5,7 +5,8 @@ using UrlShortener.Core.Entity;
 namespace UrlShortener.Application.Services;
 
 public class AuthService(
-    IIdentityService identityService) : IAuthService
+    IIdentityService identityService,
+    ICurrentUserService currentUser) : IAuthService
 {
     public async Task<Result> LoginAsync(LoginRequestDto loginRequest)
     {
@@ -37,5 +38,33 @@ public class AuthService(
         if (!result.IsSuccess)
             return Result.Failure("Failed to delete user");
         return result;
+    }
+
+    public async Task<Result<UserResponseDto>> GetCurrentUserAsync()
+    {
+        var currentUserEmail = currentUser.Email;
+        if (string.IsNullOrEmpty(currentUserEmail))
+            return Result<UserResponseDto>.Failure("Current user email is not available");
+
+        var currentUserId = currentUser.UserId;
+        if (currentUserId == null)
+            return Result<UserResponseDto>.Failure("Current user ID is not available");
+        
+        var currentUserRole = currentUser.Role;
+        if (string.IsNullOrEmpty(currentUserRole))
+            return Result<UserResponseDto>.Failure("Current user role is not available");
+        
+        var userDto = new UserResponseDto(
+            currentUserId.Value,
+            currentUserEmail,
+            currentUserRole
+        );
+        
+        return Result<UserResponseDto>.Success(userDto);
+    }
+
+    public async Task LogoutAsync()
+    {
+        await identityService.LogoutAsync();
     }
 }

@@ -28,3 +28,4 @@ C:\Users\Artem\RiderProjects\Url.Trimmer\Backend\src\UrlShortener.Application\ob
 C:\Users\Artem\RiderProjects\Url.Trimmer\Backend\src\UrlShortener.Application\obj\Debug\net10.0\refint\UrlShortener.Application.dll
 C:\Users\Artem\RiderProjects\Url.Trimmer\Backend\src\UrlShortener.Application\obj\Debug\net10.0\UrlShortener.Application.pdb
 C:\Users\Artem\RiderProjects\Url.Trimmer\Backend\src\UrlShortener.Application\obj\Debug\net10.0\ref\UrlShortener.Application.dll
+C:\Users\Artem\RiderProjects\Url.Trimmer\Backend\src\UrlShortener.Application\obj\Debug\net10.0\UrlShortener.Application.sourcelink.json

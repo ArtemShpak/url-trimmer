@@ -32,3 +32,4 @@ C:\Users\Artem\RiderProjects\Url.Trimmer\Backend\src\UrlShortener.Infrastructure
 C:\Users\Artem\RiderProjects\Url.Trimmer\Backend\src\UrlShortener.Infrastructure\obj\Debug\net10.0\refint\UrlShortener.Infrastructure.dll
 C:\Users\Artem\RiderProjects\Url.Trimmer\Backend\src\UrlShortener.Infrastructure\obj\Debug\net10.0\UrlShortener.Infrastructure.pdb
 C:\Users\Artem\RiderProjects\Url.Trimmer\Backend\src\UrlShortener.Infrastructure\obj\Debug\net10.0\ref\UrlShortener.Infrastructure.dll
+C:\Users\Artem\RiderProjects\Url.Trimmer\Backend\src\UrlShortener.Infrastructure\obj\Debug\net10.0\UrlShortener.Infrastructure.sourcelink.json
