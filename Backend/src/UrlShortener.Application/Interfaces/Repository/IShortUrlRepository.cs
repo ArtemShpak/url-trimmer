@@ -20,5 +20,7 @@ public interface IShortUrlRepository
 
     Task<ShortUrl?> GetByIdAsync(int id);
 
+    Task<string?> GetCreatedByUserEmailAsync(int userId);
+
     Task DeleteAsync(int id);
 }

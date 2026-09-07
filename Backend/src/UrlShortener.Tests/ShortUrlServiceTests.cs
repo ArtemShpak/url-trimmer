@@ -54,6 +54,28 @@ public class ShortUrlServiceTests
     }
 
     [Fact]
+    public async Task CreateShortUrlAsync_WhenOriginalUrlDiffersOnlyByCaseOrTrailingSlash_ReturnsFailure()
+    {
+        var repository = new StubShortUrlRepository();
+        await repository.AddAsync(new ShortUrl
+        {
+            Id = 1,
+            OriginalUrl = "https://example.com/path",
+            ShortCode = "ABC123",
+            CreatedByUserId = 5,
+            CreatedDate = DateTime.UtcNow
+        });
+
+        var currentUser = new StubCurrentUserService { UserId = 7, Email = "user2@example.com", Role = "User" };
+        var service = CreateSut(repository, new StubShortenerService("GEN124"), currentUser);
+
+        var result = await service.CreateShortUrlAsync("HTTPS://EXAMPLE.COM/path/");
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(DomainErrors.Url.AlreadyExists, result.Error);
+    }
+
+    [Fact]
     public async Task CreateShortUrlAsync_WhenInputIsValid_CreatesShortUrl()
     {
         var repository = new StubShortUrlRepository();
@@ -174,6 +196,7 @@ public class ShortUrlServiceTests
     public async Task GetShortUrlDetailsAsync_WhenUrlExists_ReturnsDetailsWithCanModifyFlag()
     {
         var repository = new StubShortUrlRepository();
+        repository.UserEmails[11] = "creator@example.com";
         var item = new ShortUrl
         {
             Id = 2,
@@ -240,6 +263,7 @@ public class ShortUrlServiceTests
     private sealed class StubShortUrlRepository : IShortUrlRepository
     {
         public Dictionary<int, ShortUrl> Items { get; } = new();
+        public Dictionary<int, string> UserEmails { get; } = new();
 
         public Task AddAsync(ShortUrl shortUrl)
         {
@@ -289,9 +313,17 @@ public class ShortUrlServiceTests
             return Task.CompletedTask;
         }
 
+        public Task<string?> GetCreatedByUserEmailAsync(int userId)
+        {
+            return Task.FromResult(UserEmails.TryGetValue(userId, out var email) ? email : null);
+        }
+
         public Task<bool> UrlExistsAsync(string originalUrl)
         {
-            return Task.FromResult(Items.Values.Any(u => u.OriginalUrl == originalUrl));
+            var normalized = UrlValidator.Normalize(originalUrl);
+            return Task.FromResult(Items.Values.Any(u =>
+                u.OriginalUrl.Trim() == normalized ||
+                u.OriginalUrl.ToLower() == normalized.ToLower()));
         }
     }
 

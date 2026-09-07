@@ -13,14 +13,15 @@ public class ShortUrlService(
 {
     public async Task<Result<ShortUrl>> CreateShortUrlAsync(string originalUrl)
     {
-        if (!UrlValidator.IsValid(originalUrl))
+        var normalizedUrl = UrlValidator.Normalize(originalUrl);
+        if (!UrlValidator.IsValid(normalizedUrl))
             return Result<ShortUrl>.Failure(DomainErrors.Url.InvalidFormat);
 
         var currentUserId = currentUserService.UserId;
         if (currentUserId == 0)
             return Result<ShortUrl>.Failure(DomainErrors.Auth.Unauthorized);
 
-        if (await repository.UrlExistsAsync(originalUrl))
+        if (await repository.UrlExistsAsync(normalizedUrl))
             return Result<ShortUrl>.Failure(DomainErrors.Url.AlreadyExists);
 
         string shortCode;
@@ -31,7 +32,7 @@ public class ShortUrlService(
 
         var newUrl = new ShortUrl
         {
-            OriginalUrl = originalUrl,
+            OriginalUrl = normalizedUrl,
             ShortCode = shortCode,
             CreatedByUserId = currentUserId,
             CreatedDate = DateTime.UtcNow
@@ -85,15 +86,14 @@ public class ShortUrlService(
         if (url is null)
             return Result<ShortUrlDetailsResponse>.Failure(DomainErrors.Url.NotFound);
 
-        var userName = string.IsNullOrEmpty(currentUserService.Email) 
-            ? "Unknown" 
-            : currentUserService.Email;
+        var userName = await repository.GetCreatedByUserEmailAsync(url.CreatedByUserId);
+        var safeUserName = string.IsNullOrWhiteSpace(userName) ? "Unknown" : userName;
 
         var response = new ShortUrlDetailsResponse(
             url.Id,
             url.ShortCode,
             url.OriginalUrl,
-            userName,
+            safeUserName,
             url.CreatedDate,
             url.ClickCount,
             CanModify(url));

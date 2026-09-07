@@ -15,7 +15,15 @@ public class ShortUrlRepository : IShortUrlRepository
 
     public async Task<bool> UrlExistsAsync(string originalUrl)
     {
-        return await _context.ShortUrls.AnyAsync(s => s.OriginalUrl == originalUrl);
+        var normalized = UrlValidator.Normalize(originalUrl);
+        if (string.IsNullOrWhiteSpace(normalized))
+            return false;
+
+        var normalizedLower = normalized.ToLower();
+
+        return await _context.ShortUrls.AnyAsync(s =>
+            s.OriginalUrl.ToLower() == normalizedLower ||
+            s.OriginalUrl.Trim() == normalized);
     }
 
     public async Task<bool> ShortCodeExistsAsync(string shortCode)
@@ -52,6 +60,14 @@ public class ShortUrlRepository : IShortUrlRepository
     public async Task<ShortUrl?> GetByIdAsync(int id)
     {
         return await _context.ShortUrls.FirstOrDefaultAsync(u => u.Id == id);
+    }
+
+    public async Task<string?> GetCreatedByUserEmailAsync(int userId)
+    {
+        return await _context.Users
+            .Where(u => u.Id == userId)
+            .Select(u => u.Email)
+            .FirstOrDefaultAsync();
     }
 
     public async Task DeleteAsync(int id)
