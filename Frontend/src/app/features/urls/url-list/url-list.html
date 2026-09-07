@@ -3,7 +3,7 @@
     <h2>Скорочені посилання</h2>
   </div>
 
-  <div *ngIf="authService.currentUser$ | async" class="add-url-section">
+  <div *ngIf="authService.currentUser$ | async as user" class="add-url-section">
     <h4>Додати нове посилання</h4>
 
     <div class="add-form">
@@ -11,10 +11,16 @@
         type="url"
         [(ngModel)]="newOriginalUrl"
         placeholder="Введіть довгий URL (наприклад, https://example.com)"
-        class="url-input">
+        class="url-input"
+        [disabled]="isSubmitting()"
+      />
 
-      <button (click)="addUrl()" [disabled]="!newOriginalUrl" class="btn-primary">
-        Скоротити
+      <button
+        type="button"
+        (click)="addUrl()"
+        [disabled]="!newOriginalUrl.trim() || isSubmitting()"
+        class="btn-primary">
+        {{ isSubmitting() ? 'Збереження...' : 'Скоротити' }}
       </button>
     </div>
 
@@ -23,38 +29,49 @@
     </div>
   </div>
 
-  <table>
+  <div *ngIf="isLoading()" class="loading-state">
+    Завантаження посилань...
+  </div>
+
+  <div *ngIf="!isLoading() && urls().length === 0" class="empty-state">
+    Посилань ще немає.
+  </div>
+
+  <table *ngIf="!isLoading() && urls().length > 0">
     <thead>
-    <tr>
-      <th>Оригінальний URL</th>
-      <th>Короткий URL</th>
-      <th style="text-align: center;">Дії</th>
-    </tr>
+      <tr>
+        <th>Оригінальний URL</th>
+        <th>Короткий URL</th>
+        <th style="text-align: center;">Дії</th>
+      </tr>
     </thead>
     <tbody>
-    <tr *ngFor="let url of urls()">
-      <td title="{{ url.originalUrl }}">
-        {{ url.originalUrl.length > 50 ? (url.originalUrl | slice:0:50) + '...' : url.originalUrl }}
-      </td>
-      <td>
-        <a [href]="'http://localhost:5068/' + url.shortCode" target="_blank">
-          trim.ly/{{ url.shortCode }}
-        </a>
-      </td>
-      <td style="text-align: center;">
-        <div class="action-buttons">
-          <a *ngIf="authService.currentUser$ | async"
-             [routerLink]="['/urls', url.id]"
-             class="btn-info">
-            Info
+      <tr *ngFor="let url of urls()">
+        <td title="{{ url.originalUrl }}">
+          {{ url.originalUrl.length > 50 ? (url.originalUrl | slice: 0:50) + '...' : url.originalUrl }}
+        </td>
+        <td>
+          <a [href]="'http://localhost:5068/' + url.shortCode" target="_blank">
+            trim.ly/{{ url.shortCode }}
           </a>
+        </td>
+        <td style="text-align: center;">
+          <div class="action-buttons">
+            <a *ngIf="authService.currentUser$ | async" [routerLink]="['/urls', url.id]" class="btn-info">
+              Info
+            </a>
 
-          <button *ngIf="canDelete(url)" (click)="deleteUrl(url.id)" class="btn-delete">
-            Видалити
-          </button>
-        </div>
-      </td>
-    </tr>
+            <button
+              *ngIf="canDelete(url)"
+              type="button"
+              (click)="deleteUrl(url.id)"
+              [disabled]="isDeleting() === url.id"
+              class="btn-delete">
+              {{ isDeleting() === url.id ? 'Видалення...' : 'Видалити' }}
+            </button>
+          </div>
+        </td>
+      </tr>
     </tbody>
   </table>
 </div>

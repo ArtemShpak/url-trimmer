@@ -40,6 +40,11 @@ export class AuthService {
       .pipe(tap(() => this.currentUserSubject.next(null)));
   }
 
+  // Clears the stored current user without calling backend (used on 401)
+  clearCurrentUser() {
+    this.currentUserSubject.next(null);
+  }
+
   loadUserProfile() {
     this.isLoadingSubject.next(true);
     this.http
